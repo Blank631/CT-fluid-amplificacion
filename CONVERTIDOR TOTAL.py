@@ -68,7 +68,7 @@ np.save('C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos numpy//
 ##########################################################################
 ### APPLY MODEL
 from tensorflow.keras.models import load_model
-my_model = load_model('.h5', compile=False)
+my_model = load_model('aa.h5', compile=False)
 
 test_img_input = np.expand_dims(image_resized, axis=0)
 test_prediction = my_model.predict(test_img_input)
