@@ -11,7 +11,7 @@ import SimpleITK as sitk
 import os
 
 # Path to the folder containing the DICOMs (a full series)
-dicom_folder = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//Rosalba//10000184'  # Replace with your path
+dicom_folder = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//Rosalba//10000184'  # Replace with your DICOM archive
 
 # Read the DICOM series
 reader = sitk.ImageSeriesReader()
