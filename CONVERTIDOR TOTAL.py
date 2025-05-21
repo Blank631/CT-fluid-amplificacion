@@ -4,7 +4,7 @@ Created on Mon Apr 14 23:56:47 2025
 
 @author: Azul8
 """
-
+##If you already have a NIfTI (.nii) file, you can skip the DICOM to NIfTI conversion step.
 
 ## DICOM TO NIFTY
 import SimpleITK as sitk
