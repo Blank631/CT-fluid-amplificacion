@@ -11,4 +11,4 @@ Includes a pre-trained model (aa.h5) along with the code required for processing
 5. **Visualization** of image slices and predicted masks
 6. **Restoring predictions** to the original resolution and saving as NIfTI
 
-You can find CT scans for processing at https://www.kaggle.com/datasets/nazmul0087/ct-kidney-dataset-normal-cyst-tumor-and-stone
+You can find CT scans for processing at https://www.kaggle.com/code/ayushs9020/understanding-the-competition-rsna 
