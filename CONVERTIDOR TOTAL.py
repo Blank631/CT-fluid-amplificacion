@@ -5,13 +5,15 @@ Created on Mon Apr 14 23:56:47 2025
 @author: Azul8
 """
 ##If you already have a NIfTI (.nii) file, you can skip the DICOM to NIfTI conversion step.
+For datasets in DICOM format, you need to convert them into NIfTI before processing.  
+This can be done either programmatically (see example below) or using [3D Slicer](https://www.slicer.org/), which provides a straightforward GUI-based conversion.
 
 ## DICOM TO NIFTY
 import SimpleITK as sitk
 import os
 
 # Path to the folder containing the DICOMs (a full series)
-dicom_folder = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//Rosalba//10000184'  # Replace with your DICOM archive
+dicom_folder = 'C:dicomfile'  # Replace with your DICOM archive
 
 # Read the DICOM series
 reader = sitk.ImageSeriesReader()
