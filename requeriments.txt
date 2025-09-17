@@ -1,4 +1,4 @@
-SimpleITK
+SimpleITK or 3d slicer software
 nibabel
 numpy
 scipy
