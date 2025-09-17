@@ -5,8 +5,10 @@ Created on Mon Apr 14 23:56:47 2025
 @author: Azul8
 """
 ##If you already have a NIfTI (.nii) file, you can skip the DICOM to NIfTI conversion step.
-For datasets in DICOM format, you need to convert them into NIfTI before processing.  
-This can be done either programmatically (see example below) or using [3D Slicer](https://www.slicer.org/), which provides a straightforward GUI-based conversion.
+##For datasets in DICOM format, you need to convert them into NIfTI before processing.  
+##This can be done either programmatically (OPTION 1) or using [3D Slicer](https://www.slicer.org/) OPTION 2, which provides a straightforward GUI-based conversion.
+
+##OPTION 1
 
 ## DICOM TO NIFTY
 import SimpleITK as sitk
@@ -24,10 +26,18 @@ reader.SetFileNames(dicom_names)
 image = reader.Execute()
 
 # Save as NIfTI (.nii)
-output_path = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos nifty//imagen_convertida.nii'  # replace with your localization
+output_path = 'C:converted_image.nii'  # replace with your localization
 sitk.WriteImage(image, output_path)
 
 print(f'NIfTI (.nii) file saved at: {output_path}')
+
+##OPTION 2
+
+##Open 3D Slicer.
+
+##Load the DICOM series using the DICOM module.
+
+##Export the volume as NIfTI (converted_image.nii).
 ############################################################################################
 # NII TO NUMPY
 import nibabel as nib
@@ -35,7 +45,7 @@ import numpy as np
 from scipy.ndimage import zoom
 
 # Path to the image 
-TC_path = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos nifty//imagen_convertida.nii'
+TC_path = 'C:converted_image.nii'
 
 def load_volume(path):
     """
