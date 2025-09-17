@@ -4,7 +4,7 @@ This repository provides a complete pipeline for converting DICOM image series t
 Includes a pre-trained model (aa.h5) along with the code required for processing abdominal CT scans.
 ## 🔧 Workflow Overview
 
-1. **DICOM to NIfTI Conversion** using SimpleITK
+1. **DICOM to NIfTI Conversion** this step can be performed either programmatically using SimpleITK or interactively with 3D Slicer software.
 2. **NIfTI to NumPy (.npy)** array transformation
 3. **Resizing** to a standard 3D shape (128×128×128)
 4. **Applying a trained U-Net model** for segmentation
