@@ -4,6 +4,7 @@ Created on Mon Apr 14 23:56:47 2025
 
 @author: Azul8
 """
+##The sample CT provided in this repository is already in NIfTI format. If you have your own dataset in DICOM format, you will need to convert it to NIfTI before processing.
 ##If you already have a NIfTI (.nii) file, you can skip the DICOM to NIfTI conversion step.
 ##For datasets in DICOM format, you need to convert them into NIfTI before processing.  
 ##This can be done either programmatically (OPTION 1) or using [3D Slicer](https://www.slicer.org/) OPTION 2, which provides a straightforward GUI-based conversion.
