@@ -11,5 +11,5 @@ Includes a pre-trained model (aa.h5) along with the code required for processing
 5. **Visualization** of image slices and predicted masks
 6. **Restoring predictions** to the original resolution and saving as NIfTI
 
-A sample CT scan is already included in this repository for testing purposes.
-You will need to unzip the file before running the code.
+**A sample CT scan is already included in this repository for testing purposes.
+You will need to unzip the file before running the code.**
