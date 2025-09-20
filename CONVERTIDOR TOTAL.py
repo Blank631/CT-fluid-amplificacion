@@ -46,7 +46,7 @@ import numpy as np
 from scipy.ndimage import zoom
 
 # Path to the image 
-TC_path = 'C:converted_image.nii'
+TC_path = 'C:convertido.nii' ##test image
 
 def load_volume(path):
     """
@@ -77,7 +77,7 @@ image_resized = resize_volume(image_volume)
 # Expand dimensions to meet model input expectations (add a channel axis at the end)
 image_resized = np.expand_dims(image_resized, axis=-1)
 
-np.save('C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos numpy//imagen_3001.npy', image_resized)
+np.save('C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos numpy//TC.npy', image_resized)  ##New archive .npy
 ##########################################################################
 ### APPLY MODEL
 from tensorflow.keras.models import load_model
@@ -90,7 +90,7 @@ test_prediction = 1 - test_prediction  # may be annuled depending on what you wa
 predicted_mask_binary = (test_prediction > 0.5).astype(bool)
 
 ################################
-tr_path = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos numpy//imagen_3001.npy'
+tr_path = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos numpy//TC.npy'
 
 # Load .npy files as NumPy arrays
 tr = np.load(tr_path)
@@ -122,38 +122,53 @@ plt.axis('off')
 plt.tight_layout()
 plt.show()
 ################################################################
-# CONVERT BACK TO ORIGINAL SHAPE NUMPY AND RESOLUTION
+# CONVERT .NPY BACK TO NIfTI WITH ORIGINAL SHAPE AND RESOLUTION
 
 import numpy as np
 import nibabel as nib
 from scipy.ndimage import zoom
+from tensorflow.keras.models import load_model
 
-# Path to the original NIfTI file
-original_nii_path = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos nifty//imagen_convertida.nii'
-original_nii = nib.load(original_nii_path)
-original_shape = original_nii.shape
-original_affine = original_nii.affine
+# --- 1) Paths ---
+ref_nii_path = r'C:\Users\Azul8\Downloads\CT-fluid-amplificacion-main\CT-fluid-amplificacion-main\CT_test\convertido.nii'
+npy_path    = r'C:\Users\Azul8\OneDrive\Escritorio\unet imagenes\archivos numpy\TC.npy'
+model_path  = r'aa.h5'
+out_path    = r'C:\Users\Azul8\OneDrive\Escritorio\unet imagenes\archivos nifty\amplified_fluid_prob.nii'
 
-# Path to the .npy file (prediction or resized image)
-npy_path = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos numpy//imagen_3001.npy'
-npy_array = np.load(npy_path)
+# --- 2) Load reference NIfTI (for affine/spacing) ---
+ref = nib.load(ref_nii_path)
+ref_shape  = np.array(ref.shape)
+ref_affine = ref.affine
+ref_header = ref.header
 
-# Remove channel if present (from shape (128,128,128,1) to (128,128,128))
-if npy_array.shape[-1] == 1:
-    npy_array = np.squeeze(npy_array, axis=-1)
+# --- 3) Load preprocessed volume (128x128x128x1) and run prediction ---
+vol128 = np.load(npy_path)                     # (128,128,128,1)
+if vol128.ndim == 4 and vol128.shape[-1] == 1:
+    vol128 = np.squeeze(vol128, axis=-1)       # (128,128,128)
 
-# Resize back to the original shape
-def resize_to_original(volume, target_shape):
-    factors = np.array(target_shape) / np.array(volume.shape)
-    return zoom(volume, factors, order=1)  # Bilinear interpolation
+model = load_model(model_path, compile=False)
+pred = model.predict(np.expand_dims(vol128, axis=(0, -1)))  # -> (1,128,128,128,1)
+pred = np.squeeze(pred, axis=(0, -1))          # (128,128,128)
 
-resized_to_original = resize_to_original(npy_array, original_shape)
+# Optional: invert prediction as in your script
+pred = 1.0 - pred
 
-# Create new NIfTI object with the resized matrix and original affine
-new_nii = nib.Nifti1Image(resized_to_original, affine=original_affine)
+# --- 4) Resample to the original NIfTI size (for 1:1 overlay in Slicer) ---
+factors = ref_shape / np.array(pred.shape, dtype=float)
+pred_resampled = zoom(pred, factors, order=1)  # lineal para mapa continuo
 
-# Save the new NIfTI file
-output_path = 'C://Users//Azul8//OneDrive//Escritorio//unet imagenes//archivos nifty//prediccion_restaurada.nii'
-nib.save(new_nii, output_path)
+# --- 5) Normalize (0..1) so “high intensity = fluid” ---
+pmin, pmax = float(pred_resampled.min()), float(pred_resampled.max())
+if pmax > pmin:
+    pred_norm = (pred_resampled - pmin) / (pmax - pmin)
+else:
+    pred_norm = np.zeros_like(pred_resampled, dtype=np.float32)
+pred_norm = pred_norm.astype(np.float32)
 
-print(f"Restored NIfTI file saved at: {output_path}")
+# --- 6) Save as NIfTI with study geometry ---
+nii = nib.Nifti1Image(pred_norm, affine=ref_affine, header=ref_header)
+nii.set_sform(ref_affine, code=1)
+nii.set_qform(ref_affine, code=1)
+nib.save(nii, out_path)
+
+print(f"✅ Guardado: {out_path}")
