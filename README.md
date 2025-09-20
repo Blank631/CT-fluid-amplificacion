@@ -7,7 +7,7 @@ Includes a pre-trained model (aa.h5) along with the code required for processing
 1. **DICOM to NIfTI Conversion** this step can be performed either programmatically using SimpleITK or interactively with 3D Slicer software.
 2. **NIfTI to NumPy (.npy)** array transformation
 3. **Resizing** to a standard 3D shape (128×128×128)
-4. **Applying a trained U-Net model** for segmentation
+4. **Applying a trained 3D U-Net model** for segmentation
 5. **Visualization** of image slices and predicted masks
 6. **Restoring predictions** to the original resolution and saving as NIfTI
 
