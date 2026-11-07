@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from random import randrange
 from zipfile import BadZipFile
 
 import nibabel as nib
@@ -31,11 +32,12 @@ st.write(
     "after AI-based fluid amplification."
 )
 
-st.subheader("Upload a CT volume")
+st.subheader("Upload a CT image or volume")
 with st.form("ct_upload"):
     upload = st.file_uploader(
-        "Anonymized CT volume (.zip with one DICOM series, .nii, or .nii.gz)",
-        type=["zip", "nii", "nii.gz"],
+        "Anonymized CT file (.jpg, .jpeg, .dcm, .zip, .nii, or .nii.gz)",
+        type=["jpg", "jpeg", "dcm", "zip", "nii", "nii.gz"],
+        help="For a DICOM series, upload one ZIP. JPEGs and single-slice DICOMs can be converted to NIfTI.",
     )
     submitted = st.form_submit_button("Convert to .nii")
     process = st.form_submit_button("Run AI amplification", disabled=not MODEL_PATH.is_file())
@@ -46,6 +48,7 @@ if not MODEL_PATH.is_file():
 if submitted or process:
     st.session_state.pop("converted_ct", None)
     st.session_state.pop("amplified_ct", None)
+    st.session_state.pop("example_slice", None)
     if upload is None:
         st.error("Select a CT volume first.")
     else:
@@ -53,10 +56,14 @@ if submitted or process:
             with st.spinner("Converting CT volume..."):
                 st.session_state["converted_ct"] = to_nifti(upload.name, upload)
             if process:
-                with st.spinner("Running 3D AI amplification..."):
-                    st.session_state["amplified_ct"] = amplify(
-                        st.session_state["converted_ct"], cached_model(MODEL_PATH)
-                    )
+                source = nib.Nifti1Image.from_bytes(st.session_state["converted_ct"])
+                if upload.name.lower().endswith((".jpg", ".jpeg")) or min(source.shape) < 2:
+                    st.info("The file was converted. AI amplification requires a CT volume with multiple slices.")
+                else:
+                    with st.spinner("Running 3D AI amplification..."):
+                        st.session_state["amplified_ct"] = amplify(
+                            st.session_state["converted_ct"], cached_model(MODEL_PATH)
+                        )
         except (RuntimeError, ValueError, OSError, BadZipFile, TypeError) as error:
             LOGGER.exception("CT upload failed during conversion or amplification")
             if "converted_ct" in st.session_state:
@@ -69,11 +76,15 @@ if "converted_ct" in st.session_state:
         "Download .nii", st.session_state["converted_ct"],
         file_name="converted_ct.nii", mime="application/octet-stream",
     )
+st.divider()
+st.subheader("AI-processed example")
 if "amplified_ct" in st.session_state:
-    st.subheader("Your CT · Before and after")
     original = nib.as_closest_canonical(nib.Nifti1Image.from_bytes(st.session_state["converted_ct"]))
     amplified = nib.as_closest_canonical(nib.Nifti1Image.from_bytes(st.session_state["amplified_ct"]))
-    index = st.slider("Sagittal slice index", 0, original.shape[0] - 1, original.shape[0] // 2)
+    if "example_slice" not in st.session_state:
+        st.session_state["example_slice"] = randrange(original.shape[0])
+    index = st.session_state["example_slice"]
+    st.caption(f"Random sagittal slice from the uploaded study ({index + 1} of {original.shape[0]}).")
     original_panel, amplified_panel = st.columns(2)
     original_panel.image(display_slice(original.dataobj, index, (-150, 250)), caption="Original CT · soft tissue window")
     amplified_panel.image(display_slice(amplified.dataobj, index, (0, 1)), caption="AI amplification map · normalized 0–1")
@@ -81,28 +92,14 @@ if "amplified_ct" in st.session_state:
         "Download AI amplification map (.nii)", st.session_state["amplified_ct"],
         file_name="amplified_ct.nii", mime="application/octet-stream",
     )
-st.divider()
-st.subheader("AI-processed example")
-
-mode = st.radio("Viewing mode", ("Side by side", "Switch between images"), horizontal=True)
-
-if mode == "Side by side":
+else:
     for column, (label, filename) in zip(st.columns(2), PANELS.items()):
         with column:
-            st.subheader(label)
             path = example_image(filename)
             if path is None:
                 st.info(f"Example image unavailable ({filename}).")
             else:
-                st.image(str(path), width="stretch")
-else:
-    label = st.radio("Image", tuple(PANELS), horizontal=True)
-    st.subheader(label)
-    path = example_image(PANELS[label])
-    if path is None:
-        st.info(f"Example image unavailable ({PANELS[label]}).")
-    else:
-        st.image(str(path), width=460)
+                st.image(str(path), caption=label, width="stretch")
+    st.caption("Preprocessed example for research illustration.")
 
-st.caption("The demonstration displays a preprocessed example for research illustration.")
 st.link_button("View the research code on GitHub", "https://github.com/Blank631/CT-fluid-amplificacion")

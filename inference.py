@@ -27,6 +27,8 @@ def load_amplification_model(model_path):
 
 def amplify(source_bytes, model):
     source = nib.Nifti1Image.from_bytes(source_bytes)
+    if len(source.shape) != 3 or min(source.shape) < 2:
+        raise ValueError("AI amplification requires a CT volume with multiple slices.")
     volume = source.get_fdata(dtype=np.float32, caching="unchanged")
     if not np.isfinite(volume).all():
         raise ValueError("The CT contains non-finite voxel values.")
