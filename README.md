@@ -1,15 +1,14 @@
+# CT Fluid Amplification
 
+A Streamlit viewer for a paired sagittal lumbar CT example. The AI-processed panel uses the supplied model output. The app converts anonymized CT volumes (one DICOM series in a ZIP, .nii, or .nii.gz) to downloadable .nii. The paired example illustrates AI processing. Inference on uploaded volumes requires integrating aa.h5 and its inference pipeline.
 
-This repository provides a complete pipeline for converting DICOM image series to NIfTI format, processing them as NumPy arrays, applying a deep learning model for segmentation (e.g., free fluid in abdominal CT), and restoring the predictions back to the original shape and resolution.
-Includes a pre-trained model (aa.h5) along with the code required for processing abdominal CT scans.
-## 🔧 Workflow Overview
+## Run locally
 
-1. **DICOM to NIfTI Conversion** this step can be performed either programmatically using SimpleITK or interactively with 3D Slicer software.
-2. **NIfTI to NumPy (.npy)** array transformation
-3. **Resizing** to a standard 3D shape (128×128×128)
-4. **Applying a trained 3D U-Net model** for segmentation
-5. **Visualization** of image slices and predicted masks
-6. **Restoring predictions** to the original resolution and saving as NIfTI
+```sh
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
+```
 
-**A sample CT scan is already included in this repository for testing purposes.
-You will need to unzip the file before running the code.**
+## Deploy on Streamlit Community Cloud
+
+Extract the ZIP and add `app.py`, `convert.py`, `requirements.txt`, and the `assets/` folder to a GitHub repository. In Streamlit Community Cloud, select the repository and branch, then set `app.py` as the entrypoint. Confirm the example is cleared for public display before publishing.
